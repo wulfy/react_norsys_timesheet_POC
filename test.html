@@ -1,0 +1,117 @@
+<!-- template.html -->
+<html>
+  <head>
+    <title>Product stock tutorial</title>
+	<link rel="stylesheet" href="test.css">
+    <script src="http://fb.me/react-0.12.2.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.2.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/showdown/0.3.1/showdown.min.js"></script>
+  </head>
+  <body>
+   <div id="content"></div>
+    <div id="test"></div>
+    <script type="text/jsx">
+	/* norsys test */
+	var numberTestDiv = 500;
+	var currentNode = null;
+	var OPTIONS_DATA = [
+	  "A",
+	  "B",
+	  "C",
+	  "D"
+	];
+	
+	var DaySelectorOption = React.createClass({
+		render: function() {
+			var selected = this.props.selected ? "selected" : "";
+			return (
+				<option> {this.props.value}</option>
+			);
+		}	
+	});
+	
+	var DaySelector = React.createClass({
+		handleChange: function(event){
+			this.props.onUserSelect(event.target.value);
+		  },
+		render: function() {
+				var options = [];
+				//options.push(<option selected> {option}</option>);
+				console.log("renderer");
+				this.props.options.forEach(function(option,index) {
+							options.push(<option> {option}</option>);
+				}.bind(this));				
+				return (
+					<select className="selectBox" onChange={this.handleChange} value={this.props.selectedOption}>
+					{options}
+					</select>
+				);
+		}
+	});
+	
+	function canDisplaySelectBox(element){
+		if(currentNode && currentNode != element)
+		{
+			currentNode.setState({
+					valueSaved: currentNode.state.valueSaved,
+					displaySelectBox: false
+				});
+		}
+		currentNode = element;
+	}
+	
+	var DayRow = React.createClass({
+		getInitialState: function() {
+			return {
+				valueSaved: 'A',
+				displaySelectBox: false
+			}
+		},
+		handleUserSelect: function(value) {
+			var newValue = (!value)? this.state.valueSaved:value;
+			this.setState({
+				valueSaved: newValue,
+				displaySelectBox: false
+			});
+		},
+		handleClick: function(e) {
+			this.setState({
+				valueSaved: this.state.valueSaved,
+				displaySelectBox: true
+			});
+			canDisplaySelectBox(this)
+		},
+		render: function() {
+			var value = this.state.valueSaved;
+			if (this.state.displaySelectBox) {
+				  value = <DaySelector options={OPTIONS_DATA} selectedOption={this.state.valueSaved} onUserSelect={this.handleUserSelect}  />;
+				}
+			return (
+				<div className="dayRow" onClick={this.handleClick}> {value} </div>
+			);
+		}
+	});
+	
+	var CreateTestList = React.createClass({
+		handleResetSelect: function(e) {
+			if(currentNode && e.target.id)
+			{
+				canDisplaySelectBox(null);
+			}			
+		},
+		render: function() {
+				var dayRows = [];
+				for(var i=0;i<numberTestDiv;i++)
+					dayRows.push(<DayRow class="test"/>);
+				return (
+							<div className="listRow" id="list" onClick={this.handleResetSelect} >{dayRows}</div>
+				);
+			}
+		});
+	
+	React.render(<CreateTestList />, document.getElementById('test'));
+	
+    </script>
+  </body>
+</html>
