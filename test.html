@@ -13,14 +13,51 @@
     <div id="test"></div>
     <script type="text/jsx">
 	/* norsys test */
-	var numberTestDiv = 500;
+	var numberTestDiv = 100;
 	var currentNode = null;
+	var USER_DATA = [];
+	var CATEGORIES_PROJET = {
+	1 : "TMA M6",
+	3 : "TMA M6 Replay",
+	5 : "AT"
+	}
+	
 	var OPTIONS_DATA = [
-	  "A",
-	  "B",
+	  "I",
 	  "C",
-	  "D"
+	  "SEO",
+	  "SCOTTY"
 	];
+	
+	function generate_Random_tasks()
+	{
+		var task_list = [];
+		var random_value;
+		var max = OPTIONS_DATA.length-1;
+		var min = 0;
+		for(var i=0;i<numberTestDiv;i++)
+		{
+			random_value = Math.floor((Math.random() * max)+min)
+			task_list.push(random_value);
+		}
+		
+		return task_list;
+	}
+	
+	function initDatas(){
+		var tasks = [];
+		tasks=generate_Random_tasks();
+		USER_DATA.push({user: {name:'Yannick Gard',id:102}, categorie_projet: 1, taches: tasks});
+		tasks=generate_Random_tasks();
+		USER_DATA.push({user: {name:'Cécile Aubin',id:244}, categorie_projet: 3, taches: tasks});
+		tasks=generate_Random_tasks();
+		USER_DATA.push({user: {name:'Thibaud Ringenbach',id:210}, categorie_projet: 1, taches: tasks});
+		tasks=generate_Random_tasks();
+		USER_DATA.push({user: {name:'Boris Coppin',id:53}, categorie_projet: 5, taches: tasks});
+		tasks=generate_Random_tasks();
+		USER_DATA.push({user: {name:'Amandine Daigle',id:66}, categorie_projet: 5, taches: tasks});
+	
+	}
 	
 	var DaySelectorOption = React.createClass({
 		render: function() {
@@ -38,7 +75,7 @@
 		render: function() {
 				var options = [];
 				//options.push(<option selected> {option}</option>);
-				console.log("renderer");
+				
 				this.props.options.forEach(function(option,index) {
 							options.push(<option> {option}</option>);
 				}.bind(this));				
@@ -51,6 +88,7 @@
 	});
 	
 	function canDisplaySelectBox(element){
+	console.log(currentNode);
 		if(currentNode && currentNode != element)
 		{
 			currentNode.setState({
@@ -64,16 +102,30 @@
 	var DayRow = React.createClass({
 		getInitialState: function() {
 			return {
-				valueSaved: 'A',
+				valueSaved: this.props.data,
 				displaySelectBox: false
 			}
 		},
 		handleUserSelect: function(value) {
 			var newValue = (!value)? this.state.valueSaved:value;
+			
+			//todo => ajax pour sauvegarder sur le serveur
+			var refData = this.props.rowId.split("_");
+			console.log("Saving data : userId:" + refData[0] + " dayNumber: " + refData[1]  + " Value:" + newValue);
+			//si serveur répond ok on modifie la valeur sinon on garde l'ancienne
+			//decommenter le if pour simuler une erreur un appel sur 2
+			/*if(!(Math.floor((Math.random() * 10))%2 == 0))
+			{
+				newValue = this.state.valueSaved;
+				console.log("erreur");
+			}*/
+				
 			this.setState({
 				valueSaved: newValue,
 				displaySelectBox: false
 			});
+			
+			
 		},
 		handleClick: function(e) {
 			this.setState({
@@ -87,29 +139,62 @@
 			if (this.state.displaySelectBox) {
 				  value = <DaySelector options={OPTIONS_DATA} selectedOption={this.state.valueSaved} onUserSelect={this.handleUserSelect}  />;
 				}
+			var classString = "dayRow row " + value;
 			return (
-				<div className="dayRow" onClick={this.handleClick}> {value} </div>
+				<div className={classString} onClick={this.handleClick}> {value} </div>
 			);
 		}
+	});
+
+	var UserListRow = React.createClass({
+		render: function() {
+					var userData = this.props.userData;
+					var userId = userData.user.id;
+					var dayRowsData = userData.taches;
+					var dayRows = [];
+					var categorieProjet = userData.categorie_projet;
+					for(var i=0;i<(dayRowsData.length-1);i++)
+					{
+						userId = userData.user.id+"_"+i; 
+						dayRows.push(<DayRow data={OPTIONS_DATA[dayRowsData[i]]} rowId={userId}/>);
+					}
+					return (
+						<div>
+							<div className="userRow row" > {userData.user.name} </div>
+							<div className="categorieRow row" > {CATEGORIES_PROJET[categorieProjet]} </div>
+								<div className="dayRowList">
+									{dayRows}
+								</div>
+							<br/>
+						</div>
+					);
+			}
 	});
 	
 	var CreateTestList = React.createClass({
 		handleResetSelect: function(e) {
-			if(currentNode && e.target.id)
+			if(currentNode && (e.target.className.indexOf("dayRow")==-1) && (e.target.className.indexOf("selectBox")==-1))
 			{
 				canDisplaySelectBox(null);
 			}			
 		},
+		handleSaveData: function(data) {
+			
+		},
 		render: function() {
-				var dayRows = [];
-				for(var i=0;i<numberTestDiv;i++)
-					dayRows.push(<DayRow class="test"/>);
+				var list = [];
+				for(var i in USER_DATA)
+				{
+					list.push(<UserListRow className="userListRow" userData={USER_DATA[i]}/>);
+				}
 				return (
-							<div className="listRow" id="list" onClick={this.handleResetSelect} >{dayRows}</div>
+						<div id="list" onClick={this.handleResetSelect} >
+							{list}
+						</div>
 				);
 			}
 		});
-	
+	initDatas();
 	React.render(<CreateTestList />, document.getElementById('test'));
 	
     </script>
