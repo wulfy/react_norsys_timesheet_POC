@@ -88,13 +88,19 @@
 	});
 	
 	function canDisplaySelectBox(element){
-	console.log(currentNode);
+
 		if(currentNode && currentNode != element)
 		{
 			currentNode.setState({
 					valueSaved: currentNode.state.valueSaved,
 					displaySelectBox: false
 				});
+		}else if(element && !element.state.displaySelectBox)
+		{
+			element.setState({
+				valueSaved: element.state.valueSaved,
+				displaySelectBox: true
+			});
 		}
 		currentNode = element;
 	}
@@ -128,13 +134,10 @@
 			
 		},
 		handleClick: function(e) {
-			this.setState({
-				valueSaved: this.state.valueSaved,
-				displaySelectBox: true
-			});
-			canDisplaySelectBox(this)
+			canDisplaySelectBox(this);
 		},
 		render: function() {
+		console.log("DayRow render");
 			var value = this.state.valueSaved;
 			if (this.state.displaySelectBox) {
 				  value = <DaySelector options={OPTIONS_DATA} selectedOption={this.state.valueSaved} onUserSelect={this.handleUserSelect}  />;
@@ -148,16 +151,16 @@
 
 	var UserListRow = React.createClass({
 		render: function() {
+		console.log("UserListRow render");
 					var userData = this.props.userData;
 					var userId = userData.user.id;
 					var dayRowsData = userData.taches;
 					var dayRows = [];
 					var categorieProjet = userData.categorie_projet;
-					for(var i=0;i<(dayRowsData.length-1);i++)
-					{
-						userId = userData.user.id+"_"+i; 
-						dayRows.push(<DayRow data={OPTIONS_DATA[dayRowsData[i]]} rowId={userId}/>);
-					}
+					var dayRows = dayRowsData.map(function(data, index) {
+						userId = userData.user.id+"_"+index; 
+						return(<DayRow data={OPTIONS_DATA[data]} rowId={userId}/>)
+					});
 					return (
 						<div>
 							<div className="userRow row" > {userData.user.name} </div>
@@ -182,11 +185,9 @@
 			
 		},
 		render: function() {
-				var list = [];
-				for(var i in USER_DATA)
-				{
-					list.push(<UserListRow className="userListRow" userData={USER_DATA[i]}/>);
-				}
+				var list = USER_DATA.map(function(data, index) {
+					return(<UserListRow className="userListRow" userData={data}/>)
+				});
 				return (
 						<div id="list" onClick={this.handleResetSelect} >
 							{list}
